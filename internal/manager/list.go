@@ -1,18 +1,20 @@
 package manager
 
+import "github.com/konstfish/acl-manager/internal/config"
+
 const (
 	ListFormatNetlist = "netlist"
 )
 
-func RetrieveList(url string, format string) (string, error) {
-	netList, err := downloadList(url)
+func RetrieveList(conf config.ACLConfig) (string, error) {
+	netList, err := downloadList(conf.List)
 	if err != nil {
 		return "", err
 	}
 
 	var formattedList string
 
-	if format == ListFormatNetlist {
+	if conf.Format == ListFormatNetlist {
 		formattedList = formatNetList(netList)
 	}
 

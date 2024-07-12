@@ -5,7 +5,7 @@ const (
 	AnnotationKeyList = "acl-manager.konst.fish/list"
 
 	// ACL Type (configmap, secret, list, dns, etc.)
-	AnnotationkeyType = "acl-manager.konst.fish/type"
+	AnnotationKeyType = "acl-manager.konst.fish/type"
 
 	AnnotationKeyFormat = "acl-manager.konst.fish/format"
 

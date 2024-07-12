@@ -19,7 +19,6 @@ package controller
 import (
 	"context"
 
-	v1 "github.com/konstfish/acl-manager/internal/apis/v1"
 	"github.com/konstfish/acl-manager/internal/config"
 	"github.com/konstfish/acl-manager/internal/manager"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -52,9 +51,8 @@ type IngressReconciler struct {
 func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
-	// TODO(user): your logic here
-
 	var ingress networkingv1.Ingress
+
 	if err := r.Get(ctx, req.NamespacedName, &ingress); err != nil {
 		if apierrors.IsNotFound(err) {
 			return ctrl.Result{}, nil
@@ -63,40 +61,26 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	log.Info("Ingress Reconcile", "Ingress", ingress)
+	log.Info("Ingress Reconcile", "Namespace", ingress.Namespace, "Name", ingress.Name)
 
-	list, ok := ingress.Annotations[v1.AnnotationKeyList]
-	if !ok {
-		log.Info("Ingress does not have the required annotation", "Ingress", ingress.Name)
+	var conf config.ACLConfig
+	err := conf.ParseAnnotations(ingress.Annotations)
+	if err != nil {
+		log.Error(err, "unable to parse Ingress annotations")
+		return ctrl.Result{}, err
+	}
+	if conf.List == "" {
 		return ctrl.Result{}, nil
 	}
 
-	// check for type of list (todo)
-	listType, ok := ingress.Annotations[v1.AnnotationkeyType]
-	if !ok {
-		listType = config.DefaultListFormat
-	}
-
-	acl, err := manager.RetrieveList(list, listType)
+	acl, err := manager.RetrieveList(conf)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// this will never be the case
-	if ingress.Annotations == nil {
-		ingress.Annotations = make(map[string]string)
-	}
+	ingress.Annotations[conf.Destination] = acl
 
-	// check the destination
-	destination, ok := ingress.Annotations[v1.AnnotationKeyDestination]
-	if !ok {
-		destination = config.DefaultACLDestination
-	}
-
-	// append label
-	ingress.Annotations[destination] = acl
-	log.Info("adding label")
-
+	// handle removal of acl-manager annotations (?)
 	// delete(ingress.Annotations, destination)
 
 	if err := r.Update(ctx, &ingress); err != nil {
@@ -113,10 +97,8 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
 func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		// Uncomment the following line adding a pointer to an instance of the controlled resource as an argument
 		For(&networkingv1.Ingress{}).
 		Complete(r)
 }
