@@ -2,7 +2,7 @@ package manager
 
 import "strings"
 
-func parseNetList(input string) []string {
+func praseFromNetList(input string) []string {
 	var results []string
 
 	lines := strings.Split(input, "\n")
@@ -14,4 +14,10 @@ func parseNetList(input string) []string {
 	}
 
 	return results
+}
+
+func parseFromCSV(input string) []string {
+	lines := strings.Split(input, ",")
+
+	return lines
 }

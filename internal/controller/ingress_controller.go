@@ -63,19 +63,24 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	log.Info("Ingress Reconcile", "Namespace", ingress.Namespace, "Name", ingress.Name)
 
-	var conf config.ACLConfig
-	err := conf.ParseAnnotations(ingress.Annotations)
-	if err != nil {
-		log.Error(err, "unable to parse Ingress annotations")
-		return ctrl.Result{}, err
-	}
-	if conf.List == "" {
-		return ctrl.Result{}, nil
+	var conf config.ACLConfig = config.ACLConfig{
+		IngressName:      ingress.Name,
+		IngressNamespace: ingress.Namespace,
 	}
 
-	acl, err := manager.RetrieveList(conf)
+	err := conf.ParseAnnotations(ctx, ingress.Annotations)
 	if err != nil {
-		return ctrl.Result{}, err
+		log.Error(err, "Unable to parse Ingress annotations")
+		return ctrl.Result{Requeue: false}, nil
+	}
+	if conf.List == "" {
+		return ctrl.Result{Requeue: false}, nil
+	}
+
+	acl, err := manager.RetrieveList(ctx, conf, r.Client)
+	if err != nil {
+		log.Error(err, "Unable to retrive list")
+		return ctrl.Result{Requeue: false}, nil
 	}
 
 	ingress.Annotations[conf.Destination] = acl

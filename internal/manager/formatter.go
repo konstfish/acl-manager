@@ -2,6 +2,6 @@ package manager
 
 import "strings"
 
-func formatNetList(input []string) string {
+func formatToCSV(input []string) string {
 	return strings.Join(input, ",")
 }

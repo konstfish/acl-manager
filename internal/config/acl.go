@@ -1,23 +1,29 @@
 package config
 
 import (
+	"context"
 	"errors"
 
 	v1 "github.com/konstfish/acl-manager/internal/apis/v1"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type ACLConfig struct {
-	List        string
-	Type        string
-	Format      string
-	Destination string
+	IngressName      string
+	IngressNamespace string
+	List             string
+	Type             string
+	Format           string
+	Destination      string
 }
 
 var (
 	errInvalidAnnotation = errors.New("Invalid annotation")
 )
 
-func (c *ACLConfig) ParseAnnotations(annotations map[string]string) error {
+func (c *ACLConfig) ParseAnnotations(ctx context.Context, annotations map[string]string) error {
+	log := log.FromContext(ctx)
+
 	if list, ok := annotations[v1.AnnotationKeyList]; ok {
 		c.List = list
 	} else {
@@ -27,12 +33,24 @@ func (c *ACLConfig) ParseAnnotations(annotations map[string]string) error {
 
 	if listType, ok := annotations[v1.AnnotationKeyType]; ok {
 		c.Type = listType
+	} else {
+		if isFullURL(c.List) {
+			c.Type = ListTypeHTTP
+		} else if isDomain(c.List) {
+			c.Type = ListTypeDNS
+		} else {
+			c.Type = ListTypeCM
+		}
+		log.Info("Type not specified, auto discovered instead", "Type", c.Type)
 	}
 
 	if format, ok := annotations[v1.AnnotationKeyFormat]; ok {
 		c.Format = format
 	} else {
 		c.Format = DefaultListFormat
+		if c.Type == ListTypeCM || c.Type == ListTypeSecret {
+			c.Format = ListFormatCSV
+		}
 	}
 
 	if destination, ok := annotations[v1.AnnotationKeyDestination]; ok {

@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    acl-manager.konst.fish/list: https://iplists.firehol.org/files/firehol_level1.netset
+  name: ingress-http-list
+  namespace: acl-manager
+spec:
+  ingressClassName: totally-real-ingress-class
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
