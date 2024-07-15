@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	v1 "github.com/konstfish/acl-manager/internal/apis/v1"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -15,6 +16,7 @@ type ACLConfig struct {
 	Type             string
 	Format           string
 	Destination      string
+	Polling          int
 }
 
 var (
@@ -41,22 +43,30 @@ func (c *ACLConfig) ParseAnnotations(ctx context.Context, annotations map[string
 		} else {
 			c.Type = ListTypeCM
 		}
-		log.Info("Type not specified, auto discovered instead", "Type", c.Type)
+		log.Info("type not specified, auto discovered instead", "type", c.Type)
 	}
 
+	c.Format = DefaultListFormat
+	if c.Type == ListTypeCM || c.Type == ListTypeSecret {
+		c.Format = ListFormatCSV
+	}
 	if format, ok := annotations[v1.AnnotationKeyFormat]; ok {
 		c.Format = format
-	} else {
-		c.Format = DefaultListFormat
-		if c.Type == ListTypeCM || c.Type == ListTypeSecret {
-			c.Format = ListFormatCSV
-		}
 	}
 
 	if destination, ok := annotations[v1.AnnotationKeyDestination]; ok {
 		c.Destination = destination
 	} else {
 		c.Destination = DefaultACLDestination
+	}
+
+	c.Polling = DefaultPollingRate
+	if polling, ok := annotations[v1.AnnotationKeyPolling]; ok {
+		if pollingInt, err := strconv.Atoi(polling); err == nil {
+			c.Polling = pollingInt
+		} else {
+			log.Error(err, "invalid polling rate specified")
+		}
 	}
 
 	return nil

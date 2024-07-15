@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"time"
 
 	"github.com/konstfish/acl-manager/internal/config"
 	"github.com/konstfish/acl-manager/internal/manager"
@@ -61,7 +62,7 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	log.Info("Ingress Reconcile", "Namespace", ingress.Namespace, "Name", ingress.Name)
+	log.Info("Ingress Reconcile", "namespace", ingress.Namespace, "name", ingress.Name)
 
 	var conf config.ACLConfig = config.ACLConfig{
 		IngressName:      ingress.Name,
@@ -73,6 +74,7 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		log.Error(err, "Unable to parse Ingress annotations")
 		return ctrl.Result{Requeue: false}, nil
 	}
+	// pass if no list is defined
 	if conf.List == "" {
 		return ctrl.Result{Requeue: false}, nil
 	}
@@ -96,10 +98,10 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return ctrl.Result{Requeue: true}, nil
 		}
 		log.Error(err, "unable to update Ingress")
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true}, err
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{Requeue: true, RequeueAfter: (time.Duration(conf.Polling) * time.Minute)}, nil
 }
 
 func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager) error {

@@ -4,11 +4,15 @@ const (
 	// where to retrieve the ACLs content
 	AnnotationKeyList = "acl-manager.konst.fish/list"
 
-	// ACL Type (configmap, secret, list, dns, etc.)
+	// Type (configmap, secret, list, dns)
 	AnnotationKeyType = "acl-manager.konst.fish/type"
 
+	// Format (netlist, csv)
 	AnnotationKeyFormat = "acl-manager.konst.fish/format"
 
-	// ACL Destination Annotation
+	// Destination Annotation
 	AnnotationKeyDestination = "acl-manager.konst.fish/destination"
+
+	// Polling interval (in minutes)
+	AnnotationKeyPolling = "acl-manager.konst.fish/polling"
 )
