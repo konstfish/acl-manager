@@ -4,6 +4,8 @@ Dynamically retrieve access control lists and apply them to Ingress resources
 
 ## Overview
 
+acl-manager is a [Kubernetes Controller](https://kubernetes.io/docs/concepts/architecture/controller/) that dynamically retrieves blocklists/whitelists and inserts them as annotations for ingresses e.g. `nginx.ingress.kubernetes.io/denylist-source-range`.
+
 ```mermaid
 flowchart LR
     subgraph cluster[Kubernetes Cluster]
@@ -64,7 +66,8 @@ metadata:
 ```
 
 ## Installation
-todo
+
+`cd helm && helm install acl-manager .`
 
 ## Development
 
