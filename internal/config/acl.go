@@ -43,7 +43,7 @@ func (c *ACLConfig) ParseAnnotations(ctx context.Context, annotations map[string
 		} else {
 			c.Type = ListTypeCM
 		}
-		log.Info("type not specified, auto discovered instead", "type", c.Type)
+		log.Info("list type not specified, auto discovered instead", "type", c.Type)
 	}
 
 	c.Format = DefaultListFormat

@@ -79,9 +79,24 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{Requeue: false}, nil
 	}
 
-	acl, err := manager.RetrieveList(ctx, conf, r.Client)
+	var acl string
+
+	// check cache for similar ingresses
+	key, ok := manager.GetIngressMatch(conf)
+	if ok {
+		acl, err = manager.GetACLFromCache(key, r.Client)
+		if err == nil {
+			log.Info("Matching ACL found in cache from Ingress", "key", key)
+		}
+	}
+
+	// if not found in cache, retrieve list regularly
+	if !ok || err != nil {
+		acl, err = manager.RetrieveList(ctx, conf, r.Client)
+	}
+
 	if err != nil {
-		log.Error(err, "Unable to retrive list")
+		log.Error(err, "Unable to retrieve list")
 		return ctrl.Result{Requeue: false}, nil
 	}
 
@@ -100,6 +115,8 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		log.Error(err, "unable to update Ingress")
 		return ctrl.Result{Requeue: true}, err
 	}
+
+	manager.AddIngressToCache(conf)
 
 	return ctrl.Result{Requeue: true, RequeueAfter: (time.Duration(conf.Polling) * time.Minute)}, nil
 }

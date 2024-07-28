@@ -1,20 +1,10 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ingress-whitelist
-  namespace: acl-manager
-type: Opaque
-data:
-  list: TVM0eExqRXVNUT09
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    acl-manager.konst.fish/list: ingress-whitelist
-    acl-manager.konst.fish/type: secret
-    acl-manager.konst.fish/destination: nginx.ingress.kubernetes.io/allowlist-source-range
-  name: ingress-secret-list
+    acl-manager.konst.fish/list: https://iplists.firehol.org/files/firehol_level1.netset
+    acl-manager.konst.fish/polling: '1'
+  name: ingress-http-list-match-finder
   namespace: acl-manager
 spec:
   ingressClassName: totally-real-ingress-class
