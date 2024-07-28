@@ -1,0 +1,47 @@
+{{- if .Values.rbac.cluster.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "acl-manager.fullname" . }}
+rules:
+  - apiGroups: [""]
+    resources: 
+    - secrets
+    - configmaps
+    verbs:
+    - get
+    - watch
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+    - ingresses
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+    - ingresses/status
+    verbs:
+    - get
+    - patch
+    - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "acl-manager.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "acl-manager.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "acl-manager.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

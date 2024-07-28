@@ -1,0 +1,66 @@
+replicaCount: 1
+
+image:
+  pullPolicy: IfNotPresent
+  registry: ghcr.io/
+  repository: konstfish/acl-manager
+  tag: "0.0.1"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  name: "acl-manager"
+
+rbac:
+  # create namespace scoped rbac
+  create: true
+  # create cluster scoped rbac
+  cluster:
+    create: true
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8081
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: http
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

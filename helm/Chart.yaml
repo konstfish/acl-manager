@@ -1,0 +1,9 @@
+apiVersion: v2
+name: acl-manager
+description: Dynamically retrieve access control lists and apply them to Ingress resources
+
+type: application
+
+version: 0.0.1
+
+appVersion: "0.0.1"

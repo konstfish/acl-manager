@@ -1,6 +1,6 @@
 # acl-manager
 
-Dynamically retrieves access control lists and applies them to Ingress resources.
+Dynamically retrieve access control lists and apply them to Ingress resources
 
 ## Overview
 
