@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and publish acl-manager
+      - name: Build acl-manager
         uses: docker/build-push-action@v2
         with:
           context: ./
