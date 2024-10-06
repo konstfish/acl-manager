@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	netv1 "k8s.io/api/networking/v1"
 
@@ -17,14 +18,24 @@ var ingressCache = make(map[string]config.ACLConfig)
 func AddIngressToCache(conf config.ACLConfig) {
 	key := fmt.Sprintf("%s/%s", conf.IngressName, conf.IngressNamespace)
 
+	conf.Set = time.Now()
+
 	ingressCache[key] = conf
+}
+
+func isExpired(timestamp time.Time, minutes int) bool {
+	duration := time.Since(timestamp)
+	println(int(duration.Minutes()))
+	return duration.Minutes() > float64(minutes)
 }
 
 func GetIngressMatch(conf config.ACLConfig) (string, bool) {
 	for key, cacheConf := range ingressCache {
 		if conf.List == cacheConf.List &&
 			conf.Type == cacheConf.Type &&
-			conf.Format == cacheConf.Format {
+			conf.Format == cacheConf.Format &&
+			conf.IngressName != cacheConf.IngressName &&
+			!isExpired(cacheConf.Set, conf.Polling) {
 			return key, true
 		}
 	}
