@@ -9,30 +9,27 @@ acl-manager is a [Kubernetes Controller](https://kubernetes.io/docs/concepts/arc
 ```mermaid
 flowchart LR
     subgraph cluster[Kubernetes Cluster]
-    acl(acl-manager)
+        ing([Ingress])
+        acl[ACL Manager]
+        aclsource[(ACL Source)]
 
-    acl -->|1. Retrieve Annotations| ing
-    acl -->|2. Parse Annotations| acl
-    acl -->|3. Retrieve ACL| aclsource
-    acl -->|4. Write final Annotation| ing
-
-    subgraph aclsource[ACL Source]
-    end
-
-
-    ing([Ingress])
+        acl -->|1. Retrieve Annotations| ing
+        acl -->|2. Parse Annotations| acl
+        acl -->|3. Retrieve ACL| aclsource
+        acl -->|4. Write final Annotation| ing
     end
 ```
 
 ## Usage
 
-| Annotation                           | Description              | Default                                             | Options                              |
-| ------------------------------------ | ------------------------ | --------------------------------------------------- | ------------------------------------ |
-| `acl-manager.konst.fish/list`        | Source ACL               | ``                                                  |                                      |
-| `acl-manager.konst.fish/type`        | Source Type              | `http` (Auto-Discovered)                            | `http`, `dns`, `configmap`, `secret` |
-| `acl-manager.konst.fish/format`      | ACL Type                 | `netlist`                                           | `netlist`, `csv`                     |
-| `acl-manager.konst.fish/destination` | Final Ingress Annotation | `nginx.ingress.kubernetes.io/denylist-source-range` |                                      |
-| `acl-manager.konst.fish/polling`     | Controller Refresh Rate  | `60` (Minutes)                                      |                                      |
+| Annotation                           | Description                  | Default                                             | Options                              |
+| ------------------------------------ | ---------------------------- | --------------------------------------------------- | ------------------------------------ |
+| `acl-manager.konst.fish/list`        | Source ACL                   | ``                                                  |                                      |
+| `acl-manager.konst.fish/list`        | Source ACL Basic Auth Secret | ``                                                  |                                      |
+| `acl-manager.konst.fish/type`        | Source Type                  | `http` (Auto-Discovered)                            | `http`, `dns`, `configmap`, `secret` |
+| `acl-manager.konst.fish/format`      | ACL Type                     | `netlist`                                           | `netlist`, `csv`                     |
+| `acl-manager.konst.fish/destination` | Final Ingress Annotation     | `nginx.ingress.kubernetes.io/denylist-source-range` |                                      |
+| `acl-manager.konst.fish/polling`     | Controller Refresh Rate      | `60` (Minutes)                                      |                                      |
 
 ### Minimal Example
 
@@ -49,6 +46,7 @@ metadata:
 ```
 
 ### Elaborate Example
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -59,9 +57,9 @@ metadata:
     # note this annotation is also auto discovered, if the list link is left bare (no protocol or trailing slash)
     acl-manager.konst.fish/type: dns
     # refreshed every 10 minutes
-    acl-manager.konst.fish/polling: '10'
+    acl-manager.konst.fish/polling: "10"
     # destination points to nginx allowlist
-    acl-manager.konst.fish/destination: 'nginx.ingress.kubernetes.io/allowlist-source-range'
+    acl-manager.konst.fish/destination: "nginx.ingress.kubernetes.io/allowlist-source-range"
   name: ingress-with-dns-denylist
 ```
 

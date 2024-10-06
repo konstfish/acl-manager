@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/konstfish/acl-manager/internal/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,6 +20,17 @@ func RetrieveList(ctx context.Context, conf config.ACLConfig, client client.Clie
 
 	// retrieve list
 	if conf.Type == config.ListTypeHTTP {
+		// hacky, but works for now
+		if conf.ListAuth != "" {
+			secret, err := getSecret(conf.ListAuth, conf.IngressNamespace, client)
+			if err != nil {
+				return "", err
+			}
+			// TODO: dynamically set key
+			secretString := string(secret.Data["auth"])
+
+			conf.List = strings.Split(conf.List, "://")[0] + "://" + secretString + "@" + strings.Split(conf.List, "://")[1]
+		}
 		addressList, err = getHTTPList(conf.List)
 	} else if conf.Type == config.ListTypeDNS {
 		parsedList, err = getDNSList(conf.List)
@@ -48,6 +60,11 @@ func RetrieveList(ctx context.Context, conf config.ACLConfig, client client.Clie
 
 	// format list
 	formattedList := formatToCSV(parsedList)
+
+	// validate list
+	if !validateCSV(formattedList) {
+		return "", errors.New("Issue formatting output")
+	}
 
 	return formattedList, nil
 }

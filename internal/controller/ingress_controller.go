@@ -96,8 +96,8 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if err != nil {
-		log.Error(err, "Unable to retrieve list")
-		return ctrl.Result{Requeue: false}, nil
+		log.Error(err, "Unable to retrieve list, requeue in", "time", conf.Polling)
+		return ctrl.Result{Requeue: true, RequeueAfter: (time.Duration(conf.Polling) * time.Minute)}, nil
 	}
 
 	ingress.Annotations[conf.Destination] = acl

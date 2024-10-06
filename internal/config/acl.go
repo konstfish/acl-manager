@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"time"
 
 	v1 "github.com/konstfish/acl-manager/internal/apis/v1"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -13,10 +14,12 @@ type ACLConfig struct {
 	IngressName      string
 	IngressNamespace string
 	List             string
+	ListAuth         string
 	Type             string
 	Format           string
 	Destination      string
 	Polling          int
+	Set              time.Time
 }
 
 var (
@@ -31,6 +34,12 @@ func (c *ACLConfig) ParseAnnotations(ctx context.Context, annotations map[string
 	} else {
 		// return early since this ingress does not have the list annotation
 		return nil
+	}
+
+	if listAuth, ok := annotations[v1.AnnotationKeyListAuth]; ok {
+		c.ListAuth = listAuth
+	} else {
+		c.ListAuth = DefaultListAuth
 	}
 
 	if listType, ok := annotations[v1.AnnotationKeyType]; ok {

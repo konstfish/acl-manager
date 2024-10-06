@@ -4,6 +4,9 @@ const (
 	// where to retrieve the ACLs content
 	AnnotationKeyList = "acl-manager.konst.fish/list"
 
+	// how to authenticate against ACL provider
+	AnnotationKeyListAuth = "acl-manager.konst.fish/list-auth"
+
 	// Type (configmap, secret, list, dns)
 	AnnotationKeyType = "acl-manager.konst.fish/type"
 
