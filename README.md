@@ -13,10 +13,10 @@ flowchart LR
         acl[ACL Manager]
         aclsource[(ACL Source)]
 
-        acl -->|1. Retrieve Annotations| ing
-        acl -->|2. Parse Annotations| acl
-        acl -->|3. Retrieve ACL| aclsource
-        acl -->|4. Write final Annotation| ing
+        acl -->|1\. Retrieve Annotations| ing
+        acl -->|2\. Parse Annotations| acl
+        acl -->|3\. Retrieve ACL| aclsource
+        acl -->|4\. Write final Annotation| ing
     end
 ```
 
